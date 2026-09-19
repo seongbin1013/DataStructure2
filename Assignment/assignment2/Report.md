@@ -4,17 +4,17 @@
 
 | 파일            | 설명                                                    |
 | --------------- | ------------------------------------------------------- |
-| `array_bst.c`   | 1. 배열을 이용한 이진트리 구현                          |
-| `linked_bst.c`  | 2. 포인터를 이용한 연결 자료구조 구현                   |
-| `mem_compare.c` | 3-[1] 배열/연결 구현의 메모리 사용량 실측 비교 프로그램 |
-| `REPORT.md`     | 본 설명 문서 (3-[1], 3-[2] 분석 포함)                   |
+| `ArrayBtree.c`  | 1. 배열을 이용한 이진트리 구현                          |
+| `LinkedBtree.c` | 2. 포인터를 이용한 연결 자료구조 구현                   |
+| `MemCompare.c`  | 3-[1] 배열/연결 구현의 메모리 사용량 실측 비교 프로그램 |
+| `Report.md`     | 본 설명 문서 (3-[1], 3-[2] 분석 포함)                   |
 
 컴파일:
 
 ```
-gcc -o array_bst array_bst.c
-gcc -o linked_bst linked_bst.c
-gcc -o mem_compare mem_compare.c
+gcc -o ArrayBtree ArrayBtree.c
+gcc -o LinkedBtree LinkedBtree.c
+gcc -o MemCompare MemCompare.c
 ```
 
 ### 입력 형식 (괄호 표기법)
@@ -45,11 +45,11 @@ A
     +---F
 ```
 
-두 구현(`array_bst.c`, `linked_bst.c`) 모두 같은 입력에 대해 완전히 동일한 출력을 낸다(직접 비교 확인함).
+두 구현(`ArrayBtree.c`, `LinkedBtree.c`) 모두 같은 입력에 대해 완전히 동일한 출력을 낸다(직접 비교 확인함).
 
 ---
 
-## 1. 배열을 이용한 이진트리 구현 (`array_bst.c`)
+## 1. 배열을 이용한 이진트리 구현 (`ArrayBtree.c`)
 
 루트를 인덱스 0에 두고, 인덱스 `i` 노드에 대해
 
@@ -75,7 +75,7 @@ A
 
 ---
 
-## 2. 포인터를 이용한 연결 자료구조 구현 (`linked_bst.c`)
+## 2. 포인터를 이용한 연결 자료구조 구현 (`LinkedBtree.c`)
 
 ```c
 typedef struct Node {
@@ -121,9 +121,9 @@ typedef struct Node {
 
 ## 4. 3-[1] 메모리 사용량 비교
 
-같은 노드 수(N=15)를 갖는 완전(포화)/일반/편향 이진트리 세 가지를 만들어, `array_bst.c`가 실제로 `calloc`할 배열 크기와 `linked_bst.c`가 실제로 `malloc`할 노드 수를 각각 측정했다(`mem_compare.c`). 트리 모양별 배열 필요 크기(capacity)는 실제 파싱(2*i+1, 2*i+2 인덱싱) 결과이고, `sizeof`를 곱해 실제 바이트 수를 계산했다.
+같은 노드 수(N=15)를 갖는 완전(포화)/일반/편향 이진트리 세 가지를 만들어, `ArrayBtree.c`가 실제로 `calloc`할 배열 크기와 `LinkedBtree.c`가 실제로 `malloc`할 노드 수를 각각 측정했다(`MemCompare.c`). 트리 모양별 배열 필요 크기(capacity)는 실제 파싱(2*i+1, 2*i+2 인덱싱) 결과이고, `sizeof`를 곱해 실제 바이트 수를 계산했다.
 
-`./mem_compare` 실행 결과:
+`./MemCompare` 실행 결과:
 
 ```
 N = 15 로 노드 수를 통일한 세 가지 이진트리에 대한 실제 메모리 측정
@@ -153,7 +153,7 @@ sizeof(LinkedNode) = 48 byte  (이름 + 왼쪽포인터 + 오른쪽포인터)
 
 두 구현 모두 메뉴 `[4] 노드 관계 조회`에서 이름을 입력받아 자식·부모·형제 노드를 출력한다.
 
-### 배열 구현 (`array_bst.c`)
+### 배열 구현 (`ArrayBtree.c`)
 
 ```c
 int idx = -1;
@@ -169,7 +169,7 @@ int sibling = (idx % 2 == 1) ? idx + 1 : idx - 1;
 - 이름으로 노드 **위치(인덱스)를 찾는 과정**은 배열을 순회해야 하므로 `O(capacity)`이다. 편향 트리처럼 capacity가 크게 부풀어 있으면 이 탐색 자체가 느려질 수 있다.
 - 하지만 **인덱스를 이미 알고 있다면** 자식·부모·형제 모두 사칙연산 한 번으로 `O(1)`에 구해진다. 트리를 따라 실제로 이동(포인터를 따라가거나 자료구조를 다시 훑는 일)이 전혀 필요 없다.
 
-### 연결 구현 (`linked_bst.c`)
+### 연결 구현 (`LinkedBtree.c`)
 
 ```c
 Node *findWithParent(Node *cur, Node *parent, const char *name, Node **outParent) {
