@@ -72,9 +72,3 @@ Postorder : H I D J K E B L F M G C A
 - **루트(A)의 위치**로 세 순회를 바로 구분할 수 있음: Preorder는 맨 앞, Inorder는 정확히 가운데(7번째, 왼쪽 6개·오른쪽 6개), Postorder는 맨 뒤에 위치함
 - 왼쪽 서브트리(B 이하: B D E H I J K)와 오른쪽 서브트리(C 이하: C F G L M)가 세 순회 모두에서 서로 뒤섞이지 않고 각자의 구간 안에서만 나타남
 - 단일 경로형(편향) 트리였다면 세 순회 결과가 거의 비슷하게 나왔겠지만, 위 트리는 좌우 서브트리 깊이·모양이 달라 세 순회 결과가 뚜렷하게 다름을 확인할 수 있음
-
-## 검증
-
-- `gcc -Wall -Wextra -std=c99` 경고 없이 컴파일
-- `-fsanitize=address,leak`로 실행 시 메모리 누수 없음 확인
-- `preorder`, `inorder`, `postorder`뿐 아니라 파싱(`parseTreeIterative`), 트리 구조 출력(`printStructure`), 메모리 해제(`freeTree`)까지 프로그램 전체에서 재귀 호출 없이 스택 기반 반복문으로만 구현
