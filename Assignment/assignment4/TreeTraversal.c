@@ -290,59 +290,119 @@ void postorder(Node *root) {
     printf("\n");
 }
 
-/* ---------------- 트리 구조 출력 (반복적, 오른쪽이 위, 왼쪽이 아래) ---------------- */
 
-/* (노드, 깊이) 쌍을 담는 전용 스택. printStructure 를 재귀 없이 구현하기 위해 사용. */
+#define MAX_PREFIX 256
+
+/* 각 노드를 출력할 때 필요한 정보를 담는 스택 프레임.
+   prefix : 이 노드 줄 앞에 붙는 들여쓰기+연결선 문자열
+   isLeft : 부모의 왼쪽 자식이면 1, 오른쪽 자식이면 0
+   isRoot : 루트 노드이면 1 (분기 기호 없이 그대로 출력) */
 typedef struct {
     Node *node;
-    int depth;
-} DepthItem;
+    char prefix[MAX_PREFIX];
+    int isLeft;
+    int isRoot;
+} PrintFrame;
 
 typedef struct {
-    DepthItem data[MAX_STACK];
+    PrintFrame data[MAX_STACK];
     int top;
-} DepthStack;
+} PrintStack;
 
-static void depthStackInit(DepthStack *s) { s->top = -1; }
-static int  depthStackIsEmpty(DepthStack *s) { return s->top == -1; }
+static void printStackInit(PrintStack *s) { s->top = -1; }
+static int  printStackIsEmpty(PrintStack *s) { return s->top == -1; }
 
-static void depthStackPush(DepthStack *s, Node *n, int depth) {
+static void printStackPush(PrintStack *s, Node *n, const char *prefix, int isLeft, int isRoot) {
     if (s->top >= MAX_STACK - 1) {
         fprintf(stderr, "스택 오버플로우\n");
         exit(1);
     }
     s->top++;
     s->data[s->top].node = n;
-    s->data[s->top].depth = depth;
+    strncpy(s->data[s->top].prefix, prefix, MAX_PREFIX - 1);
+    s->data[s->top].prefix[MAX_PREFIX - 1] = '\0';
+    s->data[s->top].isLeft = isLeft;
+    s->data[s->top].isRoot = isRoot;
 }
 
-static DepthItem depthStackPop(DepthStack *s) {
+static PrintFrame printStackPop(PrintStack *s) {
     return s->data[(s->top)--];
 }
 
-/* 원래 재귀 버전(오른쪽 전체 -> 노드 -> 왼쪽 전체, 즉 역중위 순회)과
-   동일한 출력 순서를, 오른쪽으로 내려가며 (노드,깊이) 를 스택에 쌓는
-   방식으로 재현한다. */
+/* dst 뒤에 suffix 를 안전하게 이어붙인다 (MAX_PREFIX 범위 내로 자름) */
+static void appendPrefix(char *dst, const char *suffix) {
+    size_t len = strlen(dst);
+    if (len < (size_t)MAX_PREFIX - 1) {
+        strncat(dst, suffix, (size_t)MAX_PREFIX - 1 - len);
+    }
+}
+
+/* 트리를 옆으로 눕힌 모양으로 출력한다: 오른쪽 서브트리가 위쪽, 왼쪽 서브트리가
+   아래쪽에 오도록 하고, 부모-자식 관계를 "│", "┌──", "└──" 선으로 이어 보여준다.
+   (오른쪽 전체 -> 노드 -> 왼쪽 전체 순서로 방문하는 것은 기존과 동일,
+   각 단계마다 접두(prefix) 문자열을 함께 스택에 쌓아 재귀 없이 구현) */
 static void printStructure(Node *root) {
-    DepthStack s;
+    PrintStack s;
     Node *cur = root;
-    int curDepth = 0;
-    int i;
+    char curPrefix[MAX_PREFIX];
+    int curIsLeft = 1;
+    int curIsRoot = 1;
 
-    depthStackInit(&s);
+    if (root == NULL) return;
 
-    while (cur != NULL || !depthStackIsEmpty(&s)) {
+    printStackInit(&s);
+    curPrefix[0] = '\0';
+
+    while (cur != NULL || !printStackIsEmpty(&s)) {
         while (cur != NULL) {
-            depthStackPush(&s, cur, curDepth);
+            char nextPrefix[MAX_PREFIX];
+
+            printStackPush(&s, cur, curPrefix, curIsLeft, curIsRoot);
+
+            strncpy(nextPrefix, curPrefix, MAX_PREFIX - 1);
+            nextPrefix[MAX_PREFIX - 1] = '\0';
+            if (curIsRoot) {
+                appendPrefix(nextPrefix, "    ");
+            } else if (curIsLeft) {
+                appendPrefix(nextPrefix, "│   ");
+            } else {
+                appendPrefix(nextPrefix, "    ");
+            }
+
             cur = cur->right;
-            curDepth++;
+            strncpy(curPrefix, nextPrefix, MAX_PREFIX - 1);
+            curPrefix[MAX_PREFIX - 1] = '\0';
+            curIsLeft = 0;
+            curIsRoot = 0;
         }
+
         {
-            DepthItem item = depthStackPop(&s);
-            for (i = 0; i < item.depth; i++) printf("    ");
-            printf("%c\n", item.node->data);
-            cur = item.node->left;
-            curDepth = item.depth + 1;
+            PrintFrame f = printStackPop(&s);
+            char nextPrefixLeft[MAX_PREFIX];
+
+            if (f.isRoot) {
+                printf("%s%c\n", f.prefix, f.node->data);
+            } else if (f.isLeft) {
+                printf("%s└── %c\n", f.prefix, f.node->data);
+            } else {
+                printf("%s┌── %c\n", f.prefix, f.node->data);
+            }
+
+            strncpy(nextPrefixLeft, f.prefix, MAX_PREFIX - 1);
+            nextPrefixLeft[MAX_PREFIX - 1] = '\0';
+            if (f.isRoot) {
+                appendPrefix(nextPrefixLeft, "    ");
+            } else if (f.isLeft) {
+                appendPrefix(nextPrefixLeft, "    ");
+            } else {
+                appendPrefix(nextPrefixLeft, "│   ");
+            }
+
+            cur = f.node->left;
+            strncpy(curPrefix, nextPrefixLeft, MAX_PREFIX - 1);
+            curPrefix[MAX_PREFIX - 1] = '\0';
+            curIsLeft = 1;
+            curIsRoot = 0;
         }
     }
 }
