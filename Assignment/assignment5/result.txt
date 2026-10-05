@@ -1,0 +1,94 @@
+Seed: 1791195547
+
+[Generated 100 distinct integers]
+ 185  517   10  715  425  962  203  253  548  983
+ 104  451  235  257  990  103  271  223  786  759
+ 711  875  727  653  316  558  109   99  828  125
+ 809  695  841  754  152  713  835  912  374  177
+ 882  794  434  686  475  845  208  450  663  228
+ 496  502   25  258  721   48  801  200  432  772
+ 668  758  788  833  799  211  179  735  416  468
+ 168  238   26  738  792  395  263  603  795  959
+ 349  366  676  504  644  291   45  623  907  439
+ 231  423  790  924  446  816  753  904  885   21
+
+[BST construction]
+Total comparisons : 641
+Tree height       : 12
+
+[Search results]
+No.  Key        Result     Seq cmp      BST cmp     
+1    682        Not found  100          22          
+2    712        Not found  100          12          
+3    340        Not found  100          20          
+4    965        Not found  100          10          
+5    813        Not found  100          18          
+6    354        Not found  100          22          
+7    103        Found      16           7           
+8    559        Not found  100          16          
+9    143        Not found  100          12          
+10   535        Not found  100          8           
+11   920        Not found  100          18          
+12   917        Not found  100          18          
+13   851        Not found  100          18          
+14   987        Not found  100          12          
+15   817        Not found  100          18          
+16   531        Not found  100          8           
+17   599        Not found  100          16          
+18   166        Not found  100          16          
+19   120        Not found  100          10          
+20   519        Not found  100          8           
+21   982        Not found  100          10          
+22   747        Not found  100          22          
+23   545        Not found  100          8           
+24   271        Found      17           13          
+25   441        Not found  100          16          
+26   315        Not found  100          18          
+27   277        Not found  100          18          
+28   116        Not found  100          10          
+29   231        Found      91           17          
+30   120        Not found  100          10          
+31   210        Not found  100          18          
+32   68         Not found  100          14          
+33   904        Found      98           19          
+34   15         Not found  100          14          
+35   673        Not found  100          22          
+36   33         Not found  100          18          
+37   986        Not found  100          12          
+38   356        Not found  100          22          
+39   317        Not found  100          20          
+40   151        Not found  100          12          
+41   144        Not found  100          12          
+42   134        Not found  100          12          
+43   435        Not found  100          14          
+44   699        Not found  100          14          
+45   6          Not found  100          4           
+46   588        Not found  100          16          
+47   376        Not found  100          22          
+48   717        Not found  100          16          
+49   270        Not found  100          18          
+50   598        Not found  100          16          
+
+Number of searches: 50 (found 4, not found 46)
+
+Sequential Search
+Total comparisons   : 4822
+Average comparisons : 96.44
+Max comparisons     : 100
+
+BST Search
+Total comparisons   : 746
+Average comparisons : 14.92
+Max comparisons     : 22
+
+[Cost comparison including BST construction]
+(Measured on these 50 searches)
+Sequential total             : 4822
+BST build + search total     : 1387 (build 641 + search 746)
+Difference (Seq - BST total) : 3435
+
+[Break-even estimate - extrapolation, not an exact value]
+Average saving per search    : 81.52 (Seq avg - BST avg)
+Estimated break-even         : 641 / 81.52 = 7.86 -> about 8 searches
+Assumption: the average saving measured on these 50 keys stays the same
+            for later searches (same data, no more insertions, similar keys).
