@@ -73,8 +73,7 @@ static void mat_adjacent(const MatGraph *g, int w, long *cmp, int print) {
 }
 
 static size_t mat_memory(const MatGraph *g) {
-    (void)g;
-    return sizeof(MatGraph);
+    return sizeof(*g);
 }
 
 /* ================= 인접 리스트 ================= */
@@ -156,27 +155,19 @@ typedef struct {
 
 /* 플랫폼(macOS/Linux)마다 rand() 구현이 달라 결과가 달라지므로,
  * 어디서 실행해도 같은 결과가 나오도록 직접 만든 xorshift32 난수 생성기를 사용 */
-static unsigned rng_state = 1;
-static unsigned next_rand(void) {
-    unsigned x = rng_state;
+static unsigned xorshift32(unsigned *state) {
+    unsigned x = *state;
     x ^= x << 13;
     x ^= x >> 17;
     x ^= x << 5;
-    rng_state = x;
+    *state = x;
     return x;
 }
-static int rnd(int n) { return (int)(next_rand() % (unsigned)n); }
 
-/* 연결/미연결 분리 측정 전용 난수 (기존 실험의 난수 흐름과 분리) */
-static unsigned rng2_state = 1;
-static int rnd2(int n) {
-    unsigned x = rng2_state;
-    x ^= x << 13;
-    x ^= x >> 17;
-    x ^= x << 5;
-    rng2_state = x;
-    return (int)(x % (unsigned)n);
-}
+static unsigned rng_state = 1;    /* 그래프 생성, 단일 실행, 평균 실험용 */
+static unsigned rng2_state = 1;   /* 연결/미연결 분리 측정 전용 (위 흐름과 분리) */
+static int rnd(int n)  { return (int)(xorshift32(&rng_state)  % (unsigned)n); }
+static int rnd2(int n) { return (int)(xorshift32(&rng2_state) % (unsigned)n); }
 
 static void generate(Truth *t, int e) {
     memset(t->used, 0, sizeof(t->used));
@@ -219,13 +210,14 @@ static int verify(const MatGraph *mg, const ListGraph *lg) {
         }
     }
     long ones = 0;
-    for (int u = 0; u < V; u++)
+    for (int u = 0; u < V; u++) {
+        if (mg->m[u][u]) return 0;                    /* 자기 루프 */
         for (int v = 0; v < V; v++) {
-            if (mg->m[u][v] != mg->m[v][u]) return 0;
-            if (mg->m[u][u]) return 0;
+            if (mg->m[u][v] != mg->m[v][u]) return 0; /* 대칭성 */
             if (mg->m[u][v] != cnt[u][v]) return 0;   /* 중복 노드도 걸러짐 */
             ones += mg->m[u][v];
         }
+    }
     return ones == total && ones == 2L * mg->edge_count &&
            mg->edge_count == lg->edge_count;
 }
@@ -251,7 +243,7 @@ static void apply_truth(Truth *t, const Ops *o) {
     t->edges[t->count].v = o->ins_v;
     t->count++;
     for (int i = 0; i < t->count; i++) {
-        if ((t->edges[i].u == o->del_u && t->edges[i].v == o->del_v)) {
+        if (t->edges[i].u == o->del_u && t->edges[i].v == o->del_v) {
             t->edges[i] = t->edges[t->count - 1];
             t->count--;
             break;
@@ -260,29 +252,27 @@ static void apply_truth(Truth *t, const Ops *o) {
     t->used[o->del_u][o->del_v] = t->used[o->del_v][o->del_u] = 0;
 }
 
-static Result run_mat(MatGraph *g, const Ops *o, int print_adj) {
+static Result run_mat(MatGraph *g, const Ops *o) {
     Result r = {0, 0, 0, 0, 0, 0};
-    long dummy = 0;
     r.memory = mat_memory(g);          /* 연산 전 상태 기준 */
     mat_insert(g, o->ins_u, o->ins_v, &r.ins);
     mat_delete(g, o->del_u, o->del_v, &r.del);
     r.connected = mat_has(g, o->con_u, o->con_v, &r.con);
-    if (print_adj) printf("  [Matrix] neighbors of %d: ", o->adj_w);
-    mat_adjacent(g, o->adj_w, &r.adj, print_adj);
-    if (print_adj) printf("\n");
-    (void)dummy;
+    printf("  [Matrix] neighbors of %d: ", o->adj_w);
+    mat_adjacent(g, o->adj_w, &r.adj, 1);
+    printf("\n");
     return r;
 }
 
-static Result run_list(ListGraph *g, const Ops *o, int print_adj) {
+static Result run_list(ListGraph *g, const Ops *o) {
     Result r = {0, 0, 0, 0, 0, 0};
     r.memory = list_memory(g);         /* 연산 전 상태 기준 */
     list_insert(g, o->ins_u, o->ins_v, &r.ins);
     list_delete(g, o->del_u, o->del_v, &r.del);
     r.connected = list_contains(g, o->con_u, o->con_v, &r.con);
-    if (print_adj) printf("  [List]   neighbors of %d: ", o->adj_w);
-    list_adjacent(g, o->adj_w, &r.adj, print_adj);
-    if (print_adj) printf("\n");
+    printf("  [List]   neighbors of %d: ", o->adj_w);
+    list_adjacent(g, o->adj_w, &r.adj, 1);
+    printf("\n");
     return r;
 }
 
@@ -375,8 +365,8 @@ int main(int argc, char *argv[]) {
         printf("  insert (%d,%d), delete (%d,%d), connect? (%d,%d), adjacent of %d\n",
                o.ins_u, o.ins_v, o.del_u, o.del_v, o.con_u, o.con_v, o.adj_w);
 
-        Result rm = run_mat(mg, &o, 1);
-        Result rl = run_list(lg, &o, 1);
+        Result rm = run_mat(mg, &o);
+        Result rl = run_list(lg, &o);
         printf("  connected? (%d,%d): Matrix=%s, List=%s\n", o.con_u, o.con_v,
                rm.connected ? "YES" : "NO", rl.connected ? "YES" : "NO");
         printf("\n");
