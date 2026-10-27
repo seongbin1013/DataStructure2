@@ -586,8 +586,9 @@ static void variant_experiment(void)
 int main(int argc, char *argv[])
 {
     if (argc > 1) {
-        unsigned long s = strtoul(argv[1], NULL, 10);
-        rng_state = (s != 0) ? (unsigned int)s : DEFAULT_SEED;
+        unsigned int s = (unsigned int)strtoul(argv[1], NULL, 10);
+        if (s != 0)                 /* 32비트로 줄인 뒤 0이면 기본 시드 유지 */
+            rng_state = s;
     }
 
     printf("Data Count : %d\n", N);
