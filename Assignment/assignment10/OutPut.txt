@@ -1,0 +1,171 @@
+Data Count : 10000
+Seed       : 20261027
+
+Random Data
+Number of Trials   : 100
+Average Inversions : 25013548.98 (50.03% of max)
+
+Selection Sort
+Total Comparisons   : 4999500000
+Average Comparisons : 49995000.00
+Total Movements     : 2997114
+Average Movements   : 29971.14
+Sorted Check        : 100 / 100 PASS
+
+Bubble Sort
+Total Comparisons   : 4999500000
+Average Comparisons : 49995000.00
+Total Movements     : 7504064694
+Average Movements   : 75040646.94
+Average Passes      : 9999.00
+Sorted Check        : 100 / 100 PASS
+
+Bubble Sort (Early Termination)
+Total Comparisons   : 4998507800
+Average Comparisons : 49985078.00
+Total Movements     : 7504064694
+Average Movements   : 75040646.94
+Average Passes      : 9874.73
+Sorted Check        : 100 / 100 PASS
+
+Insertion Sort
+Total Comparisons   : 2502353932
+Average Comparisons : 25023539.32
+Total Movements     : 2503354698
+Average Movements   : 25033546.98
+Sorted Check        : 100 / 100 PASS
+
+Bubble Sort vs Early Termination
+Saved Comparisons (total)   : 992200
+Saved Comparisons (average) : 9922.00 (0.0198%)
+
+------------------------------------
+
+Sorted Data
+Inversions   : 0 (0.00% of max)
+
+Selection Sort
+Comparisons : 49995000
+Movements   : 0
+Sorted Check: PASS
+
+Bubble Sort
+Comparisons : 49995000
+Movements   : 0
+Passes      : 9999
+Sorted Check: PASS
+
+Bubble Sort (Early Termination)
+Comparisons : 9999
+Movements   : 0
+Passes      : 1
+Sorted Check: PASS
+
+Insertion Sort
+Comparisons : 9999
+Movements   : 19998
+Sorted Check: PASS
+
+------------------------------------
+
+Reverse-Sorted Data
+Inversions   : 49994947 (100.00% of max)
+
+Selection Sort
+Comparisons : 49995000
+Movements   : 15078
+Sorted Check: PASS
+
+Bubble Sort
+Comparisons : 49995000
+Movements   : 149984841
+Passes      : 9999
+Sorted Check: PASS
+
+Bubble Sort (Early Termination)
+Comparisons : 49995000
+Movements   : 149984841
+Passes      : 9999
+Sorted Check: PASS
+
+Insertion Sort
+Comparisons : 49995000
+Movements   : 50014945
+Sorted Check: PASS
+
+------------------------------------
+
+Partially Sorted Data
+Method       : sorted data + 500 random position swaps (5% of N)
+Out of Place : 946 / 10000 (9.46%)
+Inversions   : 3015605 (6.03% of max)
+
+Selection Sort
+Comparisons : 49995000
+Movements   : 1506
+Sorted Check: PASS
+
+Bubble Sort
+Comparisons : 49995000
+Movements   : 9046815
+Passes      : 9999
+Sorted Check: PASS
+
+Bubble Sort (Early Termination)
+Comparisons : 49845669
+Movements   : 9046815
+Passes      : 9453
+Sorted Check: PASS
+
+Insertion Sort
+Comparisons : 3025600
+Movements   : 3035603
+Sorted Check: PASS
+
+------------------------------------
+
+Stability Verification
+Method : store original input order, sort by Key 1 only,
+         then check every adjacent pair with equal Key 1 keeps order ascending
+
+[Test 1] Example data from the assignment
+Input                : (527,100) (527,200) (125,300) (892,400) 
+Selection Sort       : (125,300) (527,200) (527,100) (892,400) -> Unstable
+Bubble Sort          : (125,300) (527,100) (527,200) (892,400) -> Stable
+Bubble Sort (ET)     : (125,300) (527,100) (527,200) (892,400) -> Stable
+Insertion Sort (>)   : (125,300) (527,100) (527,200) (892,400) -> Stable
+Insertion Sort (>=)  : (125,300) (527,200) (527,100) (892,400) -> Unstable
+
+[Test 2] 10000 items, Key 1 in [0, 99] (duplicate-heavy)
+Equal-Key Adjacent Pairs : 9900
+Algorithm              Result      Violations  Comparisons    Movements  Check
+Selection Sort         Unstable          3270     49995000        29679  PASS
+Bubble Sort            Stable               0     49995000     73679067  PASS
+Bubble Sort (ET)       Stable               0     49949850     73679067  PASS
+Insertion Sort (>)     Stable               0     24569683     24579687  PASS
+Insertion Sort (>=)    Unstable          9900     25069655     25079746  PASS
+
+[Test 3] Random data, 100 trials (Key 1 in [0, 1000000])
+Equal-Key Adjacent Pairs : 4941 total (49.41 per trial)
+Selection Sort       : violations in 100 / 100 trials (total 1666 pairs)
+Bubble Sort          : violations in   0 / 100 trials (total 0 pairs)
+Bubble Sort (ET)     : violations in   0 / 100 trials (total 0 pairs)
+Insertion Sort (>)   : violations in   0 / 100 trials (total 0 pairs)
+Insertion Sort (>=)  : violations in 100 / 100 trials (total 4941 pairs)
+
+Result
+Selection Sort       : Unstable
+Bubble Sort          : Stable
+Bubble Sort (ET)     : Stable
+Insertion Sort (>)   : Stable
+Insertion Sort (>=)  : Unstable
+
+------------------------------------
+
+Partially Sorted Variants (Additional Analysis)
+All variants are made from the same sorted data used above.
+
+Method                      Inversions  OutPos   BubbleET Comp  Passes  Insertion Comp  Insertion Move  Check
+Random swaps (5%)              3015605     946        49845669    9453         3025600         3035603  PASS
+Block shuffle (size 20)          47815    9520          199790      20           57812           67813  PASS
+Tail shuffle (last 10%)         244390    1000         9265175     974          254389          264388  PASS
