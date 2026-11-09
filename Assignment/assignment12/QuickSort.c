@@ -43,7 +43,9 @@ static int select_pivot(int a[], int left, int right, PivotType type)
     case PIVOT_FIRST:  return left;
     case PIVOT_RANDOM: return left + rand() % (right - left + 1);
     case PIVOT_MEDIAN3:
-    default:           return median_of_three(a, left, right);
+    default:
+        if (right - left < 2) return left;   /* 원소 2개 : mid == left 가 되어 값이 사라지므로 첫 원소 사용 */
+        return median_of_three(a, left, right);
     }
 }
 
